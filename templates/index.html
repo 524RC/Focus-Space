@@ -1,0 +1,2153 @@
+{% raw %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        // Set the theme before the page paints, so there is no flash of the wrong colors.
+        (function () {
+            var theme = null;
+            try { theme = localStorage.getItem("theme"); } catch (error) {}
+            if (theme !== "light" && theme !== "dark") {
+                theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            }
+            document.documentElement.setAttribute("data-theme", theme);
+        })();
+    </script>
+    <style>
+                /* ==================================================================
+           THEME: vintage paper and beige old-computer tones, pale olive accent.
+           Light = aged paper. Dark = the same palette after hours.
+           Every color in this file comes from the variables below.
+           ================================================================== */
+        :root,
+        :root[data-theme="light"] {
+            color-scheme: light;
+            --font: "IBM Plex Mono", "Roboto Mono", ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace;
+            --desk: #cdc6ac;          /* sidebar: beige computer case */
+            --page: #e9e2cf;          /* main background: aged paper */
+            --paper: #f3eedd;         /* cards, menus, dialogs */
+            --field: #f8f4e6;         /* text boxes */
+            --dim: #e1dac6;           /* quiet areas, like days outside the month */
+            --hover: #c0b99f;         /* hover on the sidebar */
+            --active: #b2ab91;        /* selected item in the sidebar */
+            --hover-paper: #e6dfca;   /* hover on cards and buttons */
+            --line: #bdb59a;
+            --line-soft: #d3ccb4;
+            --ink: #2c2b25;
+            --ink-2: #4f4c42;
+            --ink-3: #5c5847;
+            --accent: #7d9166;        /* pale olive green */
+            --accent-strong: #56704a; /* olive for buttons */
+            --accent-hover: #496340;
+            --on-accent: #f6f1e1;
+            --accent-soft: #d5dcbf;
+            --accent-ink: #3d5433;
+            --link: #4a6a3d;
+            --ochre-soft: #e6dab0;
+            --ochre-ink: #66561f;
+            --danger: #8a3226;
+            --danger-soft: #ecd2c7;
+            --shadow: rgba(60, 50, 20, 0.16);
+            --overlay: rgba(35, 32, 15, 0.45);
+        }
+        :root[data-theme="dark"] {
+            color-scheme: dark;
+            --desk: #181912;
+            --page: #21221a;
+            --paper: #2b2c21;
+            --field: #191a12;
+            --dim: #1c1d15;
+            --hover: #26271d;
+            --active: #33352a;
+            --hover-paper: #34362a;
+            --line: #43443a;
+            --line-soft: #34352b;
+            --ink: #e6dfc8;
+            --ink-2: #bab39a;
+            --ink-3: #a09a82;
+            --accent: #a3b784;
+            --accent-strong: #a3b784;
+            --accent-hover: #b5c896;
+            --on-accent: #1c1d14;
+            --accent-soft: #38412e;
+            --accent-ink: #c8d7ab;
+            --link: #b9cd9a;
+            --ochre-soft: #433b21;
+            --ochre-ink: #dcc67f;
+            --danger: #e59a88;
+            --danger-soft: #4b2d26;
+            --shadow: rgba(0, 0, 0, 0.45);
+            --overlay: rgba(0, 0, 0, 0.6);
+        }
+
+        * { box-sizing: border-box; }
+        html { background: var(--page); scrollbar-color: var(--line) transparent; }
+        body {
+            margin: 0;
+            font-family: var(--font);
+            font-size: 14px;
+            background: var(--page);
+            color: var(--ink);
+            height: 100vh;
+            display: flex;
+        }
+        ::selection { background: var(--accent-soft); color: var(--ink); }
+        .hidden { display: none !important; }
+        button, input, select { font-family: inherit; }
+        button:focus-visible, input:focus-visible, select:focus-visible,
+        summary:focus-visible, [contenteditable]:focus-visible {
+            outline: 2px solid var(--link);
+            outline-offset: 2px;
+        }
+
+        /* ---------------- BUTTONS ---------------- */
+        button {
+            padding: 8px 14px;
+            border: 1px solid var(--line);
+            background: var(--paper);
+            color: var(--ink);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        button:hover { background: var(--hover-paper); }
+        button:active { transform: translateY(1px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .primary { background: var(--accent-strong); color: var(--on-accent); border-color: var(--accent-strong); }
+        .primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+        .danger { color: var(--danger); }
+        .small-button { font-size: 12px; padding: 4px 9px; }
+
+        /* ---------------- SIDEBAR ---------------- */
+        #sidebar {
+            width: 264px;
+            min-width: 264px;
+            background: var(--desk);
+            border-right: 1px solid var(--line);
+            padding: 12px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .logo { font-size: 17px; font-weight: 700; margin-bottom: 16px; padding: 8px; cursor: pointer; }
+        .side-button {
+            display: block;
+            width: 100%;
+            padding: 8px 10px;
+            border: none;
+            background: transparent;
+            color: var(--ink);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: left;
+            margin-bottom: 2px;
+        }
+        .side-button:hover { background: var(--hover); }
+        .side-button.active { background: var(--active); font-weight: 700; }
+        .badge {
+            display: inline-block;
+            min-width: 18px;
+            padding: 0 6px;
+            margin-left: 6px;
+            border-radius: 9px;
+            background: var(--active);
+            font-size: 12px;
+            text-align: center;
+            font-weight: normal;
+        }
+        .badge.alert { background: var(--danger-soft); color: var(--danger); }
+        #note-list { flex: 1; min-height: 0; overflow-y: auto; margin-top: 12px; }
+        .sidebar-footer { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 8px; }
+        .section-label { font-size: 12px; font-weight: 700; color: var(--ink-2); margin: 14px 8px 4px; }
+        .folder-header {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .folder-header:hover { background: var(--hover); }
+        .folder-header.active-folder { background: var(--active); }
+        .folder-arrow { width: 18px; cursor: pointer; color: var(--ink-2); user-select: none; }
+        .folder-name { flex: 1; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .folder-actions { display: none; gap: 1px; }
+        .folder-header:hover .folder-actions { display: flex; }
+        .icon-button { border: none; background: transparent; color: var(--ink-2); padding: 2px 5px; font-size: 13px; border-radius: 4px; }
+        .icon-button:hover { background: var(--active); color: var(--ink); }
+        .folder-notes { margin-left: 14px; }
+        .folder-empty { font-size: 12px; color: var(--ink-2); padding: 4px 9px; }
+        .note-item {
+            padding: 8px 9px;
+            margin-bottom: 3px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .note-item:hover { background: var(--hover); }
+        .note-item.active { background: var(--active); }
+
+        /* ---------------- MAIN AREA ---------------- */
+        #main { flex: 1; min-width: 0; height: 100vh; padding: 20px; overflow-y: auto; background: var(--page); }
+        .page-wrap { max-width: 800px; width: 100%; margin: 0 auto; padding-top: 30px; }
+        .page-wrap.wide { max-width: 1000px; }
+        .page-wrap h1 { font-size: 30px; margin: 0 0 6px; }
+        .home-sub { color: var(--ink-2); font-size: 15px; margin: 0 0 20px; }
+        .home-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .home-heading { font-size: 16px; margin: 35px 0 12px; }
+        .count { font-size: 12px; font-weight: normal; color: var(--ink-2); margin-left: 6px; }
+        #glance, #recent-grid, #class-grid, .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+        #glance { margin-top: 28px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        .note-card, .feature-card {
+            border: 1px solid var(--line-soft);
+            border-radius: 6px;
+            padding: 16px;
+            background: var(--paper);
+        }
+        .note-card { cursor: pointer; }
+        .note-card:hover { background: var(--hover-paper); }
+        .note-card-title { font-weight: 700; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .note-card-preview { font-size: 12px; color: var(--ink-2); line-height: 1.6; height: 58px; overflow: hidden; }
+        .note-card-folder { font-size: 12px; color: var(--ink-2); margin-top: 8px; }
+        .note-card-time { font-size: 12px; color: var(--ink-3); margin-top: 10px; }
+        .glance-line { font-size: 13px; color: var(--ink-2); line-height: 1.7; }
+        .glance-line.red { color: var(--danger); }
+        .feature-card p { font-size: 12px; color: var(--ink-2); margin: 6px 0 0; line-height: 1.6; }
+        .feature-icon { font-size: 22px; margin-bottom: 8px; }
+        .empty { color: var(--ink-2); padding: 12px 0; font-size: 13px; }
+
+        /* ---------------- TEXT BOXES ---------------- */
+        .task-form input, .day-form input, #question, #comment-input, .link-row input, #folder-select {
+            background: var(--field);
+            color: var(--ink);
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .task-form input, .day-form input { padding: 10px; }
+        .task-form input::placeholder, .day-form input::placeholder,
+        #question::placeholder, #comment-input::placeholder { color: var(--ink-3); }
+
+        /* ---------------- TASKS ---------------- */
+        .task-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .task-form input[type="text"] { flex: 1; min-width: 200px; }
+        .task-group-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin: 26px 0 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .task-group-title.overdue { color: var(--danger); }
+        .task-row { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-bottom: 1px solid var(--line-soft); }
+        .task-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-strong); }
+        .task-text { flex: 1; font-size: 14px; overflow-wrap: anywhere; }
+        .task-row.done .task-text { text-decoration: line-through; color: var(--ink-3); }
+        .due-chip { font-size: 12px; color: var(--ink-2); background: var(--line-soft); border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
+        .due-chip.overdue { background: var(--danger-soft); color: var(--danger); }
+        .task-row .icon-button { opacity: 0; }
+        .task-row:hover .icon-button, .task-row .icon-button:focus-visible { opacity: 1; }
+
+                /* ---------------- CALENDAR ---------------- */
+        .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .cal-header h1 { margin: 0; }
+        .cal-nav { display: flex; gap: 6px; }
+        #cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            border-top: 1px solid var(--line);
+            border-left: 1px solid var(--line);
+        }
+        .cal-weekday {
+            padding: 8px 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--ink-2);
+            border-right: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
+        .cal-cell {
+            min-height: 96px;
+            padding: 5px;
+            border-right: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+            cursor: pointer;
+            min-width: 0;
+        }
+        .cal-cell:hover { background: var(--hover-paper); }
+        .cal-cell.other { background: var(--dim); }
+        .cal-cell.other .cal-day-num { color: var(--ink-3); }
+        .cal-cell.selected { outline: 2px solid var(--ink); outline-offset: -2px; }
+        .cal-day-num {
+            display: inline-block;
+            min-width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            font-size: 12px;
+            border-radius: 12px;
+            margin-bottom: 3px;
+        }
+        .cal-cell.today .cal-day-num { background: var(--accent-strong); color: var(--on-accent); }
+        .chip {
+            font-size: 11px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-top: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .chip.event { background: var(--accent-soft); color: var(--accent-ink); }
+        .chip.task { background: var(--ochre-soft); color: var(--ochre-ink); }
+        .chip.done { text-decoration: line-through; opacity: 0.65; }
+        .chip.more { color: var(--ink-2); padding-left: 2px; }
+        #day-panel { margin-top: 24px; padding: 18px; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 6px; }
+        #day-panel h2 { font-size: 18px; margin: 0 0 12px; }
+        .day-section-title { font-size: 12px; font-weight: 700; color: var(--ink-2); margin: 16px 0 4px; }
+        .day-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .day-form input[type="text"] { flex: 1; min-width: 160px; }
+
+        /* ---------------- EDITOR ---------------- */
+        #editor-view { max-width: 800px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+        .folder-row { font-size: 13px; color: var(--ink-2); }
+        #folder-select { margin-left: 6px; padding: 5px 8px; }
+        .fmt-bar {
+            position: sticky;
+            top: -20px;
+            z-index: 3;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 2px;
+            padding: 8px 0;
+            background: var(--page);
+            border-bottom: 1px solid var(--line);
+        }
+        .fmt-bar button { min-width: 26px; padding: 5px 4px; border: none; background: transparent; font-size: 13px; }
+        .fmt-bar button:hover { background: var(--hover-paper); }
+        .fmt-sep { width: 1px; height: 20px; background: var(--line); margin: 0 2px; }
+        #title {
+            border: none;
+            outline: none;
+            font-size: 30px;
+            font-weight: 700;
+            margin: 10px 0;
+            color: var(--ink);
+            background: transparent;
+            width: 100%;
+        }
+        #title::placeholder { color: var(--ink-3); }
+        #editor {
+            position: relative;
+            min-height: 350px;
+            outline: none;
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--ink);
+            overflow-wrap: anywhere;
+        }
+        #editor.is-empty::before { content: attr(data-placeholder); color: var(--ink-3); position: absolute; pointer-events: none; }
+        #editor > :first-child { margin-top: 0 !important; }
+        #editor h1 { font-size: 1.7em; margin: 1em 0 0.4em; }
+        #editor h2 { font-size: 1.4em; margin: 1em 0 0.4em; }
+        #editor h3 { font-size: 1.15em; margin: 1em 0 0.4em; }
+        #editor p { margin: 0 0 0.8em; }
+        #editor blockquote { margin: 0.8em 0; padding-left: 14px; border-left: 3px solid var(--accent); color: var(--ink-2); }
+        #editor pre {
+            background: var(--paper);
+            border: 1px solid var(--line-soft);
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        #editor code { background: var(--paper); padding: 1px 4px; border-radius: 3px; font-size: 0.92em; }
+        #editor hr { border: none; border-top: 1px solid var(--line); margin: 1.4em 0; }
+        #editor img { display: block; max-width: 100%; height: auto; border-radius: 4px; margin: 10px 0; }
+        #editor a { color: var(--link); }
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            border-top: 1px solid var(--line);
+            padding-top: 16px;
+            flex-wrap: wrap;
+        }
+        #save-status { font-size: 12px; color: var(--ink-2); margin-left: auto; }
+        details.dropdown { position: relative; }
+        details.dropdown summary {
+            list-style: none;
+            padding: 8px 14px;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            background: var(--paper);
+        }
+        details.dropdown summary::-webkit-details-marker { display: none; }
+        details.dropdown summary:hover { background: var(--hover-paper); }
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            z-index: 6;
+            min-width: 190px;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 4px;
+            box-shadow: 0 6px 18px var(--shadow);
+        }
+        .dropdown-menu button { display: block; width: 100%; text-align: left; border: none; background: transparent; }
+        .dropdown-menu button:hover { background: var(--hover-paper); }
+
+        /* ---------------- AI + COMMENTS ---------------- */
+        .ai-section, .comments-section {
+            margin-top: 18px;
+            padding: 20px;
+            background: var(--paper);
+            border: 1px solid var(--line-soft);
+            border-radius: 6px;
+        }
+        .ai-title { font-weight: 700; margin-bottom: 12px; }
+        .ai-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        .ask-row { display: flex; margin-top: 15px; gap: 8px; }
+        #question, #comment-input { flex: 1; padding: 10px; outline: none; }
+        #question:focus-visible, #comment-input:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
+        .outside-toggle { display: block; margin-top: 10px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+        .outside-toggle input { accent-color: var(--accent-strong); }
+        #output {
+            white-space: pre-wrap;
+            background: var(--page);
+            border: 1px solid var(--line-soft);
+            padding: 16px;
+            border-radius: 4px;
+            min-height: 60px;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.7;
+            word-wrap: break-word;
+            margin-top: 12px;
+        }
+        .comment { padding: 10px 12px; background: var(--field); border: 1px solid var(--line-soft); border-radius: 4px; margin-bottom: 8px; }
+        .comment-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-2); margin-bottom: 3px; }
+        .comment-meta .spacer { flex: 1; }
+        .comment-body { font-size: 13px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .tag { font-size: 11px; background: var(--accent-soft); color: var(--accent-ink); border-radius: 3px; padding: 1px 6px; }
+
+        /* ---------------- MODAL + TOAST ---------------- */
+        .modal { position: fixed; inset: 0; background: var(--overlay); display: flex; align-items: center; justify-content: center; z-index: 20; }
+        .modal-box {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            box-shadow: 0 12px 32px var(--shadow);
+            border-radius: 8px;
+            padding: 22px;
+            width: min(480px, 92vw);
+        }
+        .modal-box h2 { margin: 0 0 10px; font-size: 18px; }
+        .modal-box p { font-size: 13px; color: var(--ink-2); line-height: 1.6; margin: 0 0 14px; }
+        .link-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .link-row input { flex: 1; padding: 10px; font-size: 12px; min-width: 0; }
+        .modal-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; }
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            background: var(--ink);
+            color: var(--page);
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            max-width: 90vw;
+            z-index: 30;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        #toast.show { opacity: 1; }
+        @media (prefers-reduced-motion: reduce) {
+            #toast { transition: none; }
+            button:active { transform: none; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ============ SIDEBAR ============ -->
+    <div id="sidebar">
+        <div class="logo" onclick="showHome()">📝 Focus Space</div>
+        <button class="side-button" id="nav-home" onclick="showHome()">🏠 Home</button>
+        <button class="side-button" id="nav-tasks" onclick="showTasks()">
+            ✅ Tasks <span id="task-badge" class="badge hidden"></span>
+        </button>
+        <button class="side-button" id="nav-calendar" onclick="showCalendar()">📅 Calendar</button>
+        <button class="side-button" onclick="createNote()">📄 New Page</button>
+        <button class="side-button" onclick="createFolder()">📁 New Class</button>
+        <div id="note-list"></div>
+        <div class="sidebar-footer">
+            <button class="side-button" id="theme-toggle" onclick="toggleTheme()" title="Switch between light and dark mode">☾ Dark mode</button>
+            <button class="side-button" onclick="$('import-input').click()" title="PDFs, images, text, Markdown, HTML and backups. You can also drop files here.">⬆ Import files</button>
+            <button class="side-button" onclick="exportAll()">⬇ Export everything</button>
+        </div>
+        <input
+            id="import-input"
+            class="hidden"
+            type="file"
+            multiple
+            accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.md,.markdown,.html,.htm,.json"
+            onchange="importFiles(this)"
+        >
+    </div>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main id="main">
+
+        <!-- ---------- HOME ---------- -->
+        <div id="home-view" class="page-wrap">
+            <h1 id="greeting"></h1>
+            <p class="home-sub" id="home-sub"></p>
+            <div class="home-actions">
+                <button class="primary" onclick="createNote(homeFilter)">📄 New Page</button>
+                <button id="home-new-class" onclick="createFolder()">📁 New Class</button>
+                <button id="home-share" class="hidden" onclick="openShare('folder', homeFilter)">🔗 Share class</button>
+                <button id="home-back" class="hidden" onclick="showHome()">← All pages</button>
+            </div>
+            <div id="glance"></div>
+            <div id="classes-section">
+                <h2 class="home-heading">
+                    Your classes <span id="class-count" class="count"></span>
+                </h2>
+                <div id="class-grid"></div>
+            </div>
+            <h2 class="home-heading">
+                <span id="pages-heading">Recent pages</span>
+                <span id="note-count" class="count"></span>
+            </h2>
+            <div id="recent-grid"></div>
+            <div id="tools-section">
+                <h2 class="home-heading">AI tools</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📄</div>
+                        <strong>Summarize</strong>
+                        <p>Turn a long note into its key points.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">❓</div>
+                        <strong>Study questions</strong>
+                        <p>Generate practice questions from a page.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💬</div>
+                        <strong>Ask AI</strong>
+                        <p>Ask questions about a note, and optionally go beyond it.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ---------- TASKS ---------- -->
+        <div id="tasks-view" class="page-wrap hidden">
+            <h1>✅ Tasks</h1>
+            <p class="home-sub" id="tasks-sub"></p>
+            <div class="task-form">
+                <input
+                    id="task-text"
+                    type="text"
+                    maxlength="300"
+                    placeholder="Add a task..."
+                    onkeydown="if (event.key === 'Enter') addTask()"
+                >
+                <input
+                    id="task-date"
+                    type="date"
+                    title="Due date (optional)"
+                    onkeydown="if (event.key === 'Enter') addTask()"
+                >
+                <button class="primary" onclick="addTask()">Add task</button>
+            </div>
+            <div id="task-groups"></div>
+        </div>
+
+        <!-- ---------- CALENDAR ---------- -->
+        <div id="calendar-view" class="page-wrap wide hidden">
+            <div class="cal-header">
+                <h1 id="cal-title"></h1>
+                <div class="cal-nav">
+                    <button onclick="calMove(-1)" title="Previous month">‹</button>
+                    <button onclick="calToday()">Today</button>
+                    <button onclick="calMove(1)" title="Next month">›</button>
+                </div>
+            </div>
+            <div id="cal-grid"></div>
+            <div id="day-panel"></div>
+        </div>
+
+        <!-- ---------- EDITOR ---------- -->
+        <div id="editor-view" class="hidden">
+            <div class="folder-row">
+                📁 Class:
+                <select id="folder-select" onchange="moveNote()"></select>
+            </div>
+            <div class="fmt-bar" role="toolbar" aria-label="Formatting">
+                <button onmousedown="event.preventDefault(); fmt('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
+                <button onmousedown="event.preventDefault(); fmt('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
+                <button onmousedown="event.preventDefault(); fmt('underline')" title="Underline (Ctrl+U)"><u>U</u></button>
+                <button onmousedown="event.preventDefault(); fmt('strikeThrough')" title="Strikethrough"><s>S</s></button>
+                <span class="fmt-sep"></span>
+                <button onmousedown="event.preventDefault(); fmtBlock('h1')" title="Heading 1">H1</button>
+                <button onmousedown="event.preventDefault(); fmtBlock('h2')" title="Heading 2">H2</button>
+                <button onmousedown="event.preventDefault(); fmtBlock('h3')" title="Heading 3">H3</button>
+                <span class="fmt-sep"></span>
+                <button onmousedown="event.preventDefault(); fmt('insertUnorderedList')" title="Bulleted list">• List</button>
+                <button onmousedown="event.preventDefault(); fmt('insertOrderedList')" title="Numbered list">1. List</button>
+                <button onmousedown="event.preventDefault(); fmtBlock('blockquote')" title="Quote">❝ Quote</button>
+                <button onmousedown="event.preventDefault(); fmtBlock('pre')" title="Code block">&lt;/&gt;</button>
+                <span class="fmt-sep"></span>
+                <button onmousedown="event.preventDefault(); addLink()" title="Add link (Ctrl+click a link to open it)">🔗 Link</button>
+                <button onmousedown="event.preventDefault(); chooseImage()" title="Insert image (you can also paste or drop images)">🖼 Image</button>
+                <button onmousedown="event.preventDefault(); fmt('insertHorizontalRule')" title="Divider">―</button>
+                <button onmousedown="event.preventDefault(); clearFormatting()" title="Clear formatting">Clear</button>
+                <span class="fmt-sep"></span>
+                <button onmousedown="event.preventDefault(); fmt('undo')" title="Undo">↶</button>
+                <button onmousedown="event.preventDefault(); fmt('redo')" title="Redo">↷</button>
+            </div>
+            <input
+                id="image-input"
+                class="hidden"
+                type="file"
+                accept="image/png,image/jpeg,image/gif,image/webp"
+                onchange="insertImageFile(this)"
+            >
+            <input
+                id="title"
+                type="text"
+                placeholder="Untitled"
+                oninput="markDirty()"
+            >
+            <div
+                id="editor"
+                contenteditable="true"
+                spellcheck="true"
+                role="textbox"
+                aria-multiline="true"
+                aria-label="Page content"
+                data-placeholder="Start writing..."
+            ></div>
+            <div class="toolbar">
+                <button onclick="saveNote(true)">Save</button>
+                <button onclick="shareCurrentNote()">🔗 Share</button>
+                <details class="dropdown" id="export-menu">
+                    <summary>⬇ Export</summary>
+                    <div class="dropdown-menu">
+                        <button onclick="exportNote('html')">Web page (.html)</button>
+                        <button onclick="exportNote('md')">Markdown (.md)</button>
+                        <button onclick="exportNote('txt')">Plain text (.txt)</button>
+                    </div>
+                </details>
+                <button class="danger" onclick="deleteNote()">Delete</button>
+                <span id="save-status"></span>
+            </div>
+
+            <!-- AI TOOLS -->
+            <div class="ai-section">
+                <div class="ai-title">✨ AI Tools</div>
+                <div class="ai-buttons">
+                    <button onclick="runAI('summarize')">Summarize</button>
+                    <button onclick="runAI('questions')">Generate Study Questions</button>
+                </div>
+                <div class="ask-row">
+                    <input
+                        id="question"
+                        type="text"
+                        placeholder="Ask AI about this note..."
+                        onkeydown="if (event.key === 'Enter') askAI()"
+                    >
+                    <button onclick="askAI()">Ask AI</button>
+                </div>
+                <label class="outside-toggle">
+                    <input type="checkbox" id="allow-outside">
+                    Allow AI to use outside knowledge
+                </label>
+                <div id="output">Use the tools above.</div>
+            </div>
+
+            <!-- COMMENTS -->
+            <div class="comments-section">
+                <div class="ai-title" id="comments-title">💬 Comments</div>
+                <div id="comment-list"></div>
+                <div class="ask-row">
+                    <input
+                        id="comment-input"
+                        type="text"
+                        maxlength="1000"
+                        placeholder="Add a comment..."
+                        onkeydown="if (event.key === 'Enter') addComment()"
+                    >
+                    <button onclick="addComment()">Comment</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL + TOAST -->
+    <div id="modal" class="modal hidden" onclick="if (event.target === this) closeModal()">
+        <div class="modal-box" id="modal-box"></div>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+    // ==================================================================
+    // STATE
+    // ==================================================================
+    let currentView = "home";
+    let currentNoteId = null;
+    let currentNoteFolderId = null;
+    let homeFilter = null;          // null = all pages, otherwise a class id
+    let folders = [];
+    let notes = [];
+    let todos = [];
+    let events = [];
+    let comments = [];
+    const collapsed = new Set();    // classes collapsed in the sidebar
+    let dirty = false;
+    let editVersion = 0;
+    let saveTimer = null;
+    const today = new Date();
+    let calYear = today.getFullYear();
+    let calMonth = today.getMonth();
+    let selectedDate = null;        // set after helpers are defined
+    const $ = id => document.getElementById(id);
+    const editor = $("editor");
+    document.execCommand("defaultParagraphSeparator", false, "p");
+
+    // ==================================================================
+    // HELPERS
+    // ==================================================================
+    async function api(url, method = "GET", data = null) {
+        const options = {
+            method: method,
+            headers: { "Content-Type": "application/json" }
+        };
+        if (data !== null) {
+            options.body = JSON.stringify(data);
+        }
+        const response = await fetch(url, options);
+        try {
+            return await response.json();
+        } catch (error) {
+            return { error: "Unexpected response from the server." };
+        }
+    }
+    function el(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) {
+            node.className = className;
+        }
+        if (text !== undefined) {
+            node.textContent = text;
+        }
+        return node;
+    }
+    function iconButton(label, tip, handler) {
+        const button = el("button", "icon-button", label);
+        button.title = tip;
+        button.setAttribute("aria-label", tip);
+        button.onclick = (event) => {
+            event.stopPropagation();
+            handler();
+        };
+        return button;
+    }
+    let toastTimer = null;
+    function toast(text) {
+        const box = $("toast");
+        box.textContent = text;
+        box.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(
+            () => box.classList.remove("show"),
+            Math.max(4000, text.length * 60)
+        );
+    }
+    function pad(number) {
+        return String(number).padStart(2, "0");
+    }
+    function ymd(date) {
+        return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+    }
+    function todayStr() {
+        return ymd(new Date());
+    }
+    function parseYmd(text) {
+        const parts = text.split("-").map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+    function dueLabel(dateStr) {
+        const diff = Math.round(
+            (parseYmd(dateStr) - parseYmd(todayStr())) / 86400000
+        );
+        if (diff === 0) return "Today";
+        if (diff === 1) return "Tomorrow";
+        if (diff === -1) return "Yesterday";
+        return parseYmd(dateStr).toLocaleDateString(
+            undefined,
+            { weekday: "short", month: "short", day: "numeric" }
+        );
+    }
+    function formatTime(value) {
+        const parts = value.split(":").map(Number);
+        const suffix = parts[0] >= 12 ? "PM" : "AM";
+        return ((parts[0] % 12) || 12) + ":" + pad(parts[1]) + " " + suffix;
+    }
+    function greeting() {
+        const hour = new Date().getHours();
+        if (hour < 12) return "Good morning";
+        if (hour < 18) return "Good afternoon";
+        return "Good evening";
+    }
+    function timeAgo(timestamp) {
+        // SQLite stores UTC like "2026-10-02 14:30:00"
+        const date = new Date(timestamp.replace(" ", "T") + "Z");
+        const seconds = Math.floor((Date.now() - date) / 1000);
+        if (seconds < 60) return "Just now";
+        if (seconds < 3600) return Math.floor(seconds / 60) + " min ago";
+        if (seconds < 86400) return Math.floor(seconds / 3600) + " hr ago";
+        if (seconds < 172800) return "Yesterday";
+        return date.toLocaleDateString();
+    }
+    function pageCount(count) {
+        return count === 1 ? "1 page" : count + " pages";
+    }
+    selectedDate = todayStr();
+
+    // ==================================================================
+    // VIEWS
+    // ==================================================================
+    const VIEWS = ["home", "tasks", "calendar", "editor"];
+    function setView(name) {
+        currentView = name;
+        VIEWS.forEach(view => {
+            $(view + "-view").classList.toggle("hidden", view !== name);
+        });
+        $("main").scrollTop = 0;
+    }
+    async function leaveEditor() {
+        if (currentNoteId !== null && dirty) {
+            await saveNote();
+        }
+        clearTimeout(saveTimer);
+        currentNoteId = null;
+        currentNoteFolderId = null;
+        dirty = false;
+        comments = [];
+        $("title").value = "";
+        editor.innerHTML = "";
+        updateEmptyState();
+        $("output").textContent = "Use the tools above.";
+        $("comment-list").innerHTML = "";
+    }
+    async function showHome() {
+        homeFilter = null;
+        await leaveEditor();
+        setView("home");
+        await refresh();
+    }
+    async function showFolder(id) {
+        homeFilter = id;
+        await leaveEditor();
+        setView("home");
+        await refresh();
+    }
+    async function showTasks() {
+        await leaveEditor();
+        setView("tasks");
+        await refresh();
+        $("task-text").focus();
+    }
+    async function showCalendar() {
+        await leaveEditor();
+        setView("calendar");
+        await refresh();
+    }
+
+    // ==================================================================
+    // LOAD + RENDER EVERYTHING
+    // ==================================================================
+    async function refresh() {
+        const results = await Promise.all([
+            api("/api/folders"),
+            api("/api/notes"),
+            api("/api/todos"),
+            api("/api/events")
+        ]);
+        folders = Array.isArray(results[0]) ? results[0] : [];
+        notes = Array.isArray(results[1]) ? results[1] : [];
+        todos = Array.isArray(results[2]) ? results[2] : [];
+        events = Array.isArray(results[3]) ? results[3] : [];
+        renderSidebar();
+        renderHome();
+        renderTasks();
+        renderCalendar();
+        renderFolderSelect();
+    }
+
+    // ==================================================================
+    // SIDEBAR
+    // ==================================================================
+    function makeNoteItem(note) {
+        const item = el("div", "note-item", note.title || "Untitled");
+        if (note.id === currentNoteId) {
+            item.classList.add("active");
+        }
+        item.onclick = () => openNote(note.id);
+        return item;
+    }
+    function toggleFolder(id) {
+        if (collapsed.has(id)) {
+            collapsed.delete(id);
+        } else {
+            collapsed.add(id);
+        }
+        renderSidebar();
+    }
+    function renderSidebar() {
+        $("nav-home").classList.toggle(
+            "active", currentView === "home" && homeFilter === null
+        );
+        $("nav-tasks").classList.toggle("active", currentView === "tasks");
+        $("nav-calendar").classList.toggle("active", currentView === "calendar");
+        const todayKey = todayStr();
+        const open = todos.filter(todo => !todo.done);
+        const overdue = open.filter(todo => todo.due_date && todo.due_date < todayKey);
+        const badge = $("task-badge");
+        badge.classList.toggle("hidden", open.length === 0);
+        badge.classList.toggle("alert", overdue.length > 0);
+        badge.textContent = open.length;
+        badge.title = overdue.length
+            ? overdue.length + " overdue"
+            : open.length + " open";
+        const list = $("note-list");
+        list.innerHTML = "";
+        folders.forEach(folder => {
+            const folderNotes = notes.filter(note => note.folder_id === folder.id);
+            const isCollapsed = collapsed.has(folder.id);
+            const header = el("div", "folder-header");
+            if (homeFilter === folder.id && currentView === "home") {
+                header.classList.add("active-folder");
+            }
+            const arrow = el("span", "folder-arrow", isCollapsed ? "▸" : "▾");
+            arrow.onclick = () => toggleFolder(folder.id);
+            const name = el("span", "folder-name", "📁 " + folder.name);
+            name.onclick = () => showFolder(folder.id);
+            const actions = el("span", "folder-actions");
+            actions.append(
+                iconButton("＋", "New page in this class", () => createNote(folder.id)),
+                iconButton("🔗", "Share this class", () => openShare("folder", folder.id)),
+                iconButton("✎", "Rename class", () => renameFolder(folder.id)),
+                iconButton("🗑", "Delete class", () => deleteFolder(folder.id))
+            );
+            header.append(arrow, name, actions);
+            list.appendChild(header);
+            if (!isCollapsed) {
+                const children = el("div", "folder-notes");
+                if (folderNotes.length === 0) {
+                    children.appendChild(el("div", "folder-empty", "No pages yet"));
+                }
+                folderNotes.forEach(note => children.appendChild(makeNoteItem(note)));
+                list.appendChild(children);
+            }
+        });
+        const unfiled = notes.filter(
+            note => note.folder_id === null || note.folder_id === undefined
+        );
+        if (unfiled.length > 0) {
+            if (folders.length > 0) {
+                list.appendChild(el("div", "section-label", "Unfiled"));
+            }
+            unfiled.forEach(note => list.appendChild(makeNoteItem(note)));
+        }
+    }
+
+    // ==================================================================
+    // HOME
+    // ==================================================================
+    function renderGlance() {
+        const box = $("glance");
+        box.innerHTML = "";
+        const todayKey = todayStr();
+        const open = todos.filter(todo => !todo.done);
+        const overdue = open.filter(todo => todo.due_date && todo.due_date < todayKey);
+        const dueToday = open.filter(todo => todo.due_date === todayKey);
+        const taskCard = el("div", "note-card");
+        taskCard.appendChild(el("div", "note-card-title", "✅ Tasks"));
+        if (open.length === 0) {
+            taskCard.appendChild(el("div", "glance-line", "All clear. Add a task to get started."));
+        } else {
+            taskCard.appendChild(el("div", "glance-line", open.length + " open"));
+            if (overdue.length) {
+                taskCard.appendChild(el("div", "glance-line red", overdue.length + " overdue"));
+            }
+            if (dueToday.length) {
+                taskCard.appendChild(el("div", "glance-line", dueToday.length + " due today"));
+            }
+        }
+        taskCard.onclick = showTasks;
+        const upcoming = events.filter(item => item.date >= todayKey).slice(0, 3);
+        const eventCard = el("div", "note-card");
+        eventCard.appendChild(el("div", "note-card-title", "📅 Coming up"));
+        if (upcoming.length === 0) {
+            eventCard.appendChild(el("div", "glance-line", "No upcoming events."));
+        } else {
+            upcoming.forEach(item => {
+                const when = dueLabel(item.date) + (item.time ? ", " + formatTime(item.time) : "");
+                eventCard.appendChild(el("div", "glance-line", when + ": " + item.title));
+            });
+        }
+        eventCard.onclick = showCalendar;
+        box.append(taskCard, eventCard);
+    }
+    function renderHome() {
+        let folder = null;
+        if (homeFilter !== null) {
+            folder = folders.find(f => f.id === homeFilter) || null;
+            // The class was deleted; go back to the main home view.
+            if (folder === null) {
+                homeFilter = null;
+            }
+        }
+        if (folder) {
+            $("greeting").textContent = "📁 " + folder.name;
+            $("home-sub").textContent = "Pages in this class";
+        } else {
+            $("greeting").textContent = greeting() + " 👋";
+            $("home-sub").textContent = "What are you studying today?";
+        }
+        $("home-back").classList.toggle("hidden", !folder);
+        $("home-share").classList.toggle("hidden", !folder);
+        $("home-new-class").classList.toggle("hidden", !!folder);
+        $("glance").classList.toggle("hidden", !!folder);
+        $("classes-section").classList.toggle("hidden", !!folder || folders.length === 0);
+        $("tools-section").classList.toggle("hidden", !!folder);
+        $("pages-heading").textContent = folder ? "Pages" : "Recent pages";
+        const visible = folder
+            ? notes.filter(note => note.folder_id === folder.id)
+            : notes;
+        $("note-count").textContent = pageCount(visible.length);
+        renderGlance();
+        renderClassGrid();
+        renderNoteGrid(visible, folder ? Infinity : 6, !folder);
+    }
+    function renderClassGrid() {
+        $("class-count").textContent =
+            folders.length === 1 ? "1 class" : folders.length + " classes";
+        const grid = $("class-grid");
+        grid.innerHTML = "";
+        folders.forEach(folder => {
+            const card = el("div", "note-card");
+            card.append(
+                el("div", "note-card-title", "📁 " + folder.name),
+                el("div", "note-card-time", pageCount(folder.note_count))
+            );
+            card.onclick = () => showFolder(folder.id);
+            grid.appendChild(card);
+        });
+    }
+    function renderNoteGrid(list, limit, showClassName) {
+        const grid = $("recent-grid");
+        grid.innerHTML = "";
+        if (list.length === 0) {
+            grid.appendChild(el(
+                "div",
+                "empty",
+                showClassName
+                    ? "No pages yet. Create your first one to get started."
+                    : "No pages in this class yet."
+            ));
+            return;
+        }
+        list.slice(0, limit).forEach(note => {
+            const card = el("div", "note-card");
+            card.append(
+                el("div", "note-card-title", note.title || "Untitled"),
+                el("div", "note-card-preview", note.preview || "Empty page")
+            );
+            if (showClassName && note.folder_id !== null && note.folder_id !== undefined) {
+                const folder = folders.find(f => f.id === note.folder_id);
+                if (folder) {
+                    card.appendChild(el("div", "note-card-folder", "📁 " + folder.name));
+                }
+            }
+            card.appendChild(el("div", "note-card-time", timeAgo(note.updated_at)));
+            card.onclick = () => openNote(note.id);
+            grid.appendChild(card);
+        });
+    }
+
+    // ==================================================================
+    // CLASSES (FOLDERS)
+    // ==================================================================
+    async function createFolder() {
+        const name = prompt("Class name (for example: Biology 101):");
+        if (name === null || !name.trim()) {
+            return;
+        }
+        const result = await api("/api/folders", "POST", { name: name.trim() });
+        if (result.error) {
+            toast(result.error);
+        }
+        await refresh();
+    }
+    async function renameFolder(id) {
+        const folder = folders.find(f => f.id === id);
+        if (!folder) {
+            return;
+        }
+        const name = prompt("Rename class:", folder.name);
+        if (name === null || !name.trim()) {
+            return;
+        }
+        await api(`/api/folders/${id}`, "PUT", { name: name.trim() });
+        await refresh();
+    }
+    async function deleteFolder(id) {
+        const folder = folders.find(f => f.id === id);
+        if (!folder) {
+            return;
+        }
+        const confirmed = confirm(
+            `Delete the class "${folder.name}"?\n\n` +
+            `Its ${pageCount(folder.note_count)} will NOT be deleted. ` +
+            `They will move to Unfiled. Any share link for the class stops working.`
+        );
+        if (!confirmed) {
+            return;
+        }
+        await api(`/api/folders/${id}`, "DELETE");
+        collapsed.delete(id);
+        if (homeFilter === id) {
+            homeFilter = null;
+        }
+        if (currentNoteFolderId === id) {
+            currentNoteFolderId = null;
+        }
+        await refresh();
+    }
+    function renderFolderSelect() {
+        const select = $("folder-select");
+        select.innerHTML = "";
+        const none = el("option", "", "Unfiled");
+        none.value = "";
+        select.appendChild(none);
+        folders.forEach(folder => {
+            const option = el("option", "", folder.name);
+            option.value = folder.id;
+            select.appendChild(option);
+        });
+        select.value =
+            currentNoteFolderId === null ? "" : String(currentNoteFolderId);
+    }
+    async function moveNote() {
+        if (currentNoteId === null) {
+            return;
+        }
+        const value = $("folder-select").value;
+        currentNoteFolderId = value === "" ? null : Number(value);
+        await api(
+            `/api/notes/${currentNoteId}/move`,
+            "PUT",
+            { folder_id: currentNoteFolderId }
+        );
+        await refresh();
+    }
+
+        // ==================================================================
+    // NOTES + RICH TEXT EDITOR
+    // ==================================================================
+    function setStatus(text) {
+        $("save-status").textContent = text;
+    }
+    function markDirty() {
+        dirty = true;
+        editVersion += 1;
+        setStatus("Unsaved changes...");
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => saveNote(), 1200);
+    }
+    const BLOCK_SELECTOR = "ul, ol, pre, hr, blockquote, h1, h2, h3, img";
+    function editorIsEmpty() {
+        return !editor.textContent.trim() && !editor.querySelector(BLOCK_SELECTOR);
+    }
+    function updateEmptyState() {
+        editor.classList.toggle("is-empty", editorIsEmpty());
+    }
+    // Typing and formatting need a paragraph to work inside. Without one,
+    // the first line of a new page would be loose text that headings and
+    // lists can't be applied to.
+    function ensureParagraph(force = false) {
+        if (!force && editor.innerHTML.trim() !== "") {
+            return;
+        }
+        editor.innerHTML = "<p><br></p>";
+        const range = document.createRange();
+        range.setStart(editor.firstChild, 0);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+    // The HTML to save. Browsers sometimes put a list inside a paragraph
+    // (<p><ul>...</ul></p>), which isn't valid, so unwrap those.
+    function cleanEditorHtml() {
+        if (editorIsEmpty()) {
+            return "";
+        }
+        const copy = editor.cloneNode(true);
+        copy.querySelectorAll("img").forEach(image => {
+            try {
+                image.setAttribute(
+                    "src",
+                    new URL(image.getAttribute("src"), location.href).pathname
+                );
+            } catch (error) {
+                image.remove();
+            }
+        });
+        copy.querySelectorAll("p").forEach(paragraph => {
+            if (paragraph.querySelector("ul, ol, h1, h2, h3, pre, blockquote, hr, p, div")) {
+                while (paragraph.firstChild) {
+                    paragraph.parentNode.insertBefore(paragraph.firstChild, paragraph);
+                }
+                paragraph.remove();
+            }
+        });
+        return copy.innerHTML;
+    }
+    function afterEdit() {
+        updateEmptyState();
+        markDirty();
+    }
+    editor.addEventListener("input", () => {
+        // Everything was deleted: keep one empty paragraph to type into.
+        if (editorIsEmpty() && editor.innerHTML !== "<p><br></p>") {
+            ensureParagraph(true);
+        }
+        afterEdit();
+    });
+    editor.addEventListener("focus", () => {
+        ensureParagraph();
+        updateEmptyState();
+    });
+    editor.addEventListener("blur", () => {
+        if (editorIsEmpty()) {
+            editor.innerHTML = "";
+        }
+        updateEmptyState();
+    });
+    // Where the picture goes when the image button opened a file picker.
+    let savedRange = null;
+    function isImageFile(file) {
+        return file.type.startsWith("image/");
+    }
+    function dragHasFiles(event) {
+        return !!event.dataTransfer &&
+            Array.from(event.dataTransfer.types || []).includes("Files");
+    }
+    async function uploadAndInsert(file) {
+        if (currentNoteId === null) {
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            toast("That image is over 10 MB.");
+            return;
+        }
+        const form = new FormData();
+        form.append("file", file);
+        setStatus("Uploading image...");
+        let data;
+        try {
+            const response = await fetch("/api/upload-image", { method: "POST", body: form });
+            data = await response.json();
+        } catch (error) {
+            setStatus("");
+            toast("The image couldn't be uploaded.");
+            return;
+        }
+        if (data.error) {
+            setStatus("");
+            toast(data.error);
+            return;
+        }
+        editor.focus();
+        ensureParagraph();
+        if (savedRange) {
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(savedRange);
+            savedRange = null;
+        }
+        document.execCommand("insertImage", false, data.url);
+        afterEdit();
+    }
+    function chooseImage() {
+        const selection = window.getSelection();
+        savedRange = selection.rangeCount && editor.contains(selection.anchorNode)
+            ? selection.getRangeAt(0).cloneRange()
+            : null;
+        $("image-input").click();
+    }
+    async function insertImageFile(input) {
+        const files = Array.from(input.files);
+        input.value = "";
+        for (const file of files) {
+            await uploadAndInsert(file);
+        }
+    }
+    // Paste: pictures are uploaded, anything else is pasted as plain text
+    // so styles from other websites don't sneak in.
+    editor.addEventListener("paste", async (event) => {
+        const clipboard = event.clipboardData || window.clipboardData;
+        const pictures = Array.from(clipboard.files || []).filter(isImageFile);
+        event.preventDefault();
+        if (pictures.length) {
+            for (const file of pictures) {
+                await uploadAndInsert(file);
+            }
+            return;
+        }
+        document.execCommand("insertText", false, clipboard.getData("text/plain"));
+    });
+    // Links inside editable text don't open by themselves. Attached files
+    // open with a click; other links open with Ctrl+click (Cmd+click on Mac).
+    // Clicking a picture selects it, so Delete or Backspace removes it.
+    editor.addEventListener("click", (event) => {
+        const link = event.target.closest("a");
+        if (link && editor.contains(link)) {
+            const href = link.getAttribute("href") || "";
+            if (href.startsWith("/uploads/")) {
+                event.preventDefault();
+                window.location.href = href;      // downloads the file
+            } else if (event.ctrlKey || event.metaKey) {
+                event.preventDefault();
+                window.open(href, "_blank", "noopener");
+            }
+            return;
+        }
+        if (event.target.tagName === "IMG") {
+            const range = document.createRange();
+            range.selectNode(event.target);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    });
+    // Drop files on the page: pictures go into it, other files are imported.
+    editor.addEventListener("dragover", (event) => {
+        if (dragHasFiles(event)) {
+            event.preventDefault();
+        }
+    });
+    editor.addEventListener("drop", async (event) => {
+        if (!dragHasFiles(event)) {
+            return;
+        }
+        event.preventDefault();
+        const files = Array.from(event.dataTransfer.files);
+        const pictures = files.filter(isImageFile);
+        const others = files.filter(file => !isImageFile(file));
+        if (document.caretRangeFromPoint) {
+            savedRange = document.caretRangeFromPoint(event.clientX, event.clientY);
+        }
+        for (const file of pictures) {
+            await uploadAndInsert(file);
+        }
+        if (others.length) {
+            importFileList(others);
+        }
+    });
+    // Dropping files anywhere else imports them. (Without this the browser
+    // would open the file and leave the app.)
+    window.addEventListener("dragover", (event) => {
+        if (dragHasFiles(event)) {
+            event.preventDefault();
+        }
+    });
+    window.addEventListener("drop", (event) => {
+        if (!dragHasFiles(event)) {
+            return;
+        }
+        event.preventDefault();
+        if (!editor.contains(event.target)) {
+            importFileList(Array.from(event.dataTransfer.files));
+        }
+    });
+    window.addEventListener("beforeunload", (event) => {
+        if (dirty) {
+            event.preventDefault();
+            event.returnValue = "";
+        }
+    });
+    function fmt(command, value = null) {
+        editor.focus();
+        ensureParagraph();
+        document.execCommand(command, false, value);
+        afterEdit();
+    }
+    function fmtBlock(tag) {
+        editor.focus();
+        ensureParagraph();
+        const current = (document.queryCommandValue("formatBlock") || "")
+            .toLowerCase()
+            .replace(/[<>]/g, "");
+        // Clicking the same style again turns it back into normal text.
+        document.execCommand("formatBlock", false, current === tag ? "p" : tag);
+        afterEdit();
+    }
+    function clearFormatting() {
+        editor.focus();
+        ensureParagraph();
+        document.execCommand("removeFormat");
+        document.execCommand("formatBlock", false, "p");
+        afterEdit();
+    }
+    function addLink() {
+        const selection = window.getSelection();
+        const range = selection.rangeCount ? selection.getRangeAt(0) : null;
+        let url = prompt("Link address (for example: https://example.com):");
+        if (!url || !url.trim()) {
+            return;
+        }
+        url = url.trim();
+        if (!/^(https?:\/\/|mailto:)/i.test(url)) {
+            url = "https://" + url;
+        }
+        editor.focus();
+        ensureParagraph();
+        // Restore the selection the prompt may have cleared.
+        if (range) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        if (selection.isCollapsed) {
+            document.execCommand("insertHTML", false, `<a href="${encodeURI(url)}">${url.replace(/</g, "&lt;")}</a>`);
+        } else {
+            document.execCommand("createLink", false, url);
+        }
+        afterEdit();
+    }
+    async function createNote(folderId = null) {
+        const result = await api("/api/notes", "POST", { folder_id: folderId });
+        if (folderId !== null) {
+            collapsed.delete(folderId);   // make sure the new page is visible
+        }
+        await openNote(result.id);
+        $("title").focus();
+    }
+    async function openNote(id) {
+        if (currentNoteId !== null && dirty) {
+            await saveNote();
+        }
+        const note = await api(`/api/notes/${id}`);
+        if (note.error) {
+            toast(note.error);
+            return;
+        }
+        currentNoteId = id;
+        currentNoteFolderId = note.folder_id ?? null;
+        setView("editor");
+        $("title").value = note.title;
+        editor.innerHTML = note.content;      // already sanitized by the server
+        updateEmptyState();
+        dirty = false;
+        setStatus("");
+        $("output").textContent = "Use the tools above.";
+        await Promise.all([refresh(), loadComments()]);
+    }
+    async function saveNote(manual = false) {
+        if (currentNoteId === null) {
+            if (manual) {
+                toast("Create or open a page first.");
+            }
+            return;
+        }
+        clearTimeout(saveTimer);
+        const id = currentNoteId;
+        const version = editVersion;
+        setStatus("Saving...");
+        const result = await api(
+            `/api/notes/${id}`,
+            "PUT",
+            { title: $("title").value, content: cleanEditorHtml() }
+        );
+        if (result.error) {
+            setStatus("Could not save");
+            toast(result.error);
+            return;
+        }
+        // If you kept typing while saving, stay marked as unsaved.
+        if (version === editVersion) {
+            dirty = false;
+            setStatus("Saved");
+        }
+        await refresh();
+    }
+    async function deleteNote() {
+        if (currentNoteId === null) {
+            return;
+        }
+        if (!confirm("Delete this page? This also removes its comments and share link.")) {
+            return;
+        }
+        const deletedId = currentNoteId;
+        await api(`/api/notes/${deletedId}`, "DELETE");
+        // Update the sidebar right away instead of waiting for the refresh.
+        notes = notes.filter(note => note.id !== deletedId);
+        currentNoteId = null;
+        dirty = false;
+        renderSidebar();
+        await showHome();
+    }
+
+    // ==================================================================
+    // COMMENTS
+    // ==================================================================
+    async function loadComments() {
+        if (currentNoteId === null) {
+            return;
+        }
+        const id = currentNoteId;
+        const list = await api(`/api/notes/${id}/comments`);
+        if (id !== currentNoteId) {
+            return;
+        }
+        comments = Array.isArray(list) ? list : [];
+        renderComments();
+    }
+    function renderComments() {
+        $("comments-title").textContent = "💬 Comments (" + comments.length + ")";
+        const box = $("comment-list");
+        box.innerHTML = "";
+        comments.forEach(comment => {
+            const card = el("div", "comment");
+            const meta = el("div", "comment-meta");
+            meta.appendChild(el("strong", "", comment.author));
+            if (comment.source === "shared") {
+                meta.appendChild(el("span", "tag", "via share link"));
+            }
+            meta.appendChild(el("span", "", timeAgo(comment.created_at)));
+            meta.appendChild(el("span", "spacer"));
+            meta.appendChild(iconButton("✕", "Delete comment", () => deleteComment(comment.id)));
+            card.append(meta, el("div", "comment-body", comment.body));
+            box.appendChild(card);
+        });
+    }
+    async function addComment() {
+        const input = $("comment-input");
+        const body = input.value.trim();
+        if (!body || currentNoteId === null) {
+            return;
+        }
+        const result = await api(
+            `/api/notes/${currentNoteId}/comments`,
+            "POST",
+            { body: body }
+        );
+        if (result.error) {
+            toast(result.error);
+            return;
+        }
+        input.value = "";
+        await loadComments();
+    }
+    async function deleteComment(id) {
+        await api(`/api/comments/${id}`, "DELETE");
+        await loadComments();
+    }
+
+    // ==================================================================
+    // TASKS
+    // ==================================================================
+    async function addTask() {
+        const input = $("task-text");
+        const text = input.value.trim();
+        if (!text) {
+            input.focus();
+            return;
+        }
+        const result = await api(
+            "/api/todos",
+            "POST",
+            { text: text, due_date: $("task-date").value || null }
+        );
+        if (result.error) {
+            toast(result.error);
+            return;
+        }
+        input.value = "";
+        $("task-date").value = "";
+        await refresh();
+        input.focus();
+    }
+    async function toggleTask(id, done) {
+        await api(`/api/todos/${id}`, "PUT", { done: done });
+        await refresh();
+    }
+    async function deleteTask(id) {
+        await api(`/api/todos/${id}`, "DELETE");
+        await refresh();
+    }
+    async function clearCompleted() {
+        const count = todos.filter(todo => todo.done).length;
+        if (!count || !confirm(`Remove ${count} completed task${count === 1 ? "" : "s"}?`)) {
+            return;
+        }
+        await api("/api/todos/clear-completed", "POST");
+        await refresh();
+    }
+    function makeTaskRow(todo, overdue, showDue = true) {
+        const row = el("div", "task-row" + (todo.done ? " done" : ""));
+        const box = document.createElement("input");
+        box.type = "checkbox";
+        box.checked = todo.done;
+        box.setAttribute("aria-label", "Mark done: " + todo.text);
+        box.onchange = () => toggleTask(todo.id, box.checked);
+        row.append(box, el("span", "task-text", todo.text));
+        if (todo.due_date && showDue) {
+            row.appendChild(el(
+                "span",
+                "due-chip" + (overdue ? " overdue" : ""),
+                dueLabel(todo.due_date)
+            ));
+        }
+        row.appendChild(iconButton("✕", "Delete task", () => deleteTask(todo.id)));
+        return row;
+    }
+    function renderTasks() {
+        const todayKey = todayStr();
+        const open = todos.filter(todo => !todo.done);
+        const done = todos.filter(todo => todo.done);
+        $("tasks-sub").textContent = todos.length === 0
+            ? "Nothing here yet. Add your first task above."
+            : open.length + " open, " + done.length + " done";
+        const groups = [
+            { title: "Overdue", cls: "overdue", overdue: true,
+              items: open.filter(todo => todo.due_date && todo.due_date < todayKey) },
+            { title: "Today",
+              items: open.filter(todo => todo.due_date === todayKey) },
+            { title: "Upcoming",
+              items: open.filter(todo => todo.due_date && todo.due_date > todayKey) },
+            { title: "No date",
+              items: open.filter(todo => !todo.due_date) },
+            { title: "Completed", clear: true, items: done }
+        ];
+        const box = $("task-groups");
+        box.innerHTML = "";
+        groups.forEach(group => {
+            if (group.items.length === 0) {
+                return;
+            }
+            const heading = el("div", "task-group-title" + (group.cls ? " " + group.cls : ""));
+            heading.appendChild(el("span", "", group.title + " (" + group.items.length + ")"));
+            if (group.clear) {
+                const clear = el("button", "small-button", "Clear completed");
+                clear.onclick = clearCompleted;
+                heading.appendChild(clear);
+            }
+            box.appendChild(heading);
+            group.items.forEach(todo => box.appendChild(makeTaskRow(todo, !!group.overdue)));
+        });
+    }
+
+        // ==================================================================
+    // CALENDAR
+    // ==================================================================
+    const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    function calMove(delta) {
+        calMonth += delta;
+        if (calMonth < 0) {
+            calMonth = 11;
+            calYear -= 1;
+        } else if (calMonth > 11) {
+            calMonth = 0;
+            calYear += 1;
+        }
+        renderCalendar();
+    }
+    function calToday() {
+        const now = new Date();
+        calYear = now.getFullYear();
+        calMonth = now.getMonth();
+        selectedDate = todayStr();
+        renderCalendar();
+    }
+    function selectDate(key) {
+        selectedDate = key;
+        const date = parseYmd(key);
+        calYear = date.getFullYear();
+        calMonth = date.getMonth();
+        renderCalendar();
+    }
+    function renderCalendar() {
+        const first = new Date(calYear, calMonth, 1);
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        const rows = Math.ceil((first.getDay() + daysInMonth) / 7);
+        $("cal-title").textContent = first.toLocaleDateString(
+            undefined,
+            { month: "long", year: "numeric" }
+        );
+        const eventsByDate = {};
+        const tasksByDate = {};
+        events.forEach(item => {
+            (eventsByDate[item.date] = eventsByDate[item.date] || []).push(item);
+        });
+        todos.forEach(todo => {
+            if (todo.due_date) {
+                (tasksByDate[todo.due_date] = tasksByDate[todo.due_date] || []).push(todo);
+            }
+        });
+        const grid = $("cal-grid");
+        grid.innerHTML = "";
+        WEEKDAYS.forEach(day => grid.appendChild(el("div", "cal-weekday", day)));
+        const todayKey = todayStr();
+        const start = new Date(calYear, calMonth, 1 - first.getDay());
+        for (let i = 0; i < rows * 7; i++) {
+            const day = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+            const key = ymd(day);
+            const cell = el("div", "cal-cell");
+            if (day.getMonth() !== calMonth) cell.classList.add("other");
+            if (key === todayKey) cell.classList.add("today");
+            if (key === selectedDate) cell.classList.add("selected");
+            cell.appendChild(el("div", "cal-day-num", String(day.getDate())));
+            const items = [];
+            (eventsByDate[key] || []).forEach(item => items.push({
+                kind: "event",
+                label: (item.time ? formatTime(item.time) + " " : "") + item.title
+            }));
+            (tasksByDate[key] || []).forEach(todo => items.push({
+                kind: "task",
+                label: todo.text,
+                done: todo.done
+            }));
+            items.slice(0, 3).forEach(item => {
+                const chip = el(
+                    "div",
+                    "chip " + item.kind + (item.done ? " done" : ""),
+                    item.label
+                );
+                chip.title = item.label;
+                cell.appendChild(chip);
+            });
+            if (items.length > 3) {
+                cell.appendChild(el("div", "chip more", "+" + (items.length - 3) + " more"));
+            }
+            cell.onclick = () => selectDate(key);
+            grid.appendChild(cell);
+        }
+        renderDayPanel();
+    }
+    async function addEventForDay() {
+        const title = $("ev-title").value.trim();
+        if (!title) {
+            $("ev-title").focus();
+            return;
+        }
+        const result = await api(
+            "/api/events",
+            "POST",
+            { title: title, date: selectedDate, time: $("ev-time").value || "" }
+        );
+        if (result.error) {
+            toast(result.error);
+            return;
+        }
+        await refresh();
+    }
+    async function addTaskForDay() {
+        const text = $("dp-task").value.trim();
+        if (!text) {
+            $("dp-task").focus();
+            return;
+        }
+        const result = await api(
+            "/api/todos",
+            "POST",
+            { text: text, due_date: selectedDate }
+        );
+        if (result.error) {
+            toast(result.error);
+            return;
+        }
+        await refresh();
+    }
+    async function deleteEvent(id) {
+        await api(`/api/events/${id}`, "DELETE");
+        await refresh();
+    }
+    function renderDayPanel() {
+        const panel = $("day-panel");
+        panel.innerHTML = "";
+        panel.appendChild(el(
+            "h2",
+            "",
+            parseYmd(selectedDate).toLocaleDateString(
+                undefined,
+                { weekday: "long", month: "long", day: "numeric", year: "numeric" }
+            )
+        ));
+        const dayEvents = events.filter(item => item.date === selectedDate);
+        const dayTasks = todos.filter(todo => todo.due_date === selectedDate);
+        panel.appendChild(el("div", "day-section-title", "Events"));
+        if (dayEvents.length === 0) {
+            panel.appendChild(el("div", "empty", "No events."));
+        }
+        dayEvents.forEach(item => {
+            const row = el("div", "task-row");
+            row.appendChild(el(
+                "span",
+                "task-text",
+                (item.time ? formatTime(item.time) + "  " : "") + item.title
+            ));
+            row.appendChild(iconButton("✕", "Delete event", () => deleteEvent(item.id)));
+            panel.appendChild(row);
+        });
+        panel.appendChild(el("div", "day-section-title", "Tasks due"));
+        if (dayTasks.length === 0) {
+            panel.appendChild(el("div", "empty", "No tasks due."));
+        }
+        dayTasks.forEach(todo => panel.appendChild(makeTaskRow(todo, false, false)));
+        // Add event
+        panel.appendChild(el("div", "day-section-title", "Add an event"));
+        const eventForm = el("div", "day-form");
+        const evTitle = document.createElement("input");
+        evTitle.type = "text";
+        evTitle.id = "ev-title";
+        evTitle.maxLength = 120;
+        evTitle.placeholder = "Event title (for example: Chemistry exam)";
+        evTitle.onkeydown = (event) => { if (event.key === "Enter") addEventForDay(); };
+        const evTime = document.createElement("input");
+        evTime.type = "time";
+        evTime.id = "ev-time";
+        evTime.title = "Time (optional)";
+        const evButton = el("button", "primary", "Add event");
+        evButton.onclick = addEventForDay;
+        eventForm.append(evTitle, evTime, evButton);
+        panel.appendChild(eventForm);
+        // Add task
+        panel.appendChild(el("div", "day-section-title", "Add a task due this day"));
+        const taskForm = el("div", "day-form");
+        const dpTask = document.createElement("input");
+        dpTask.type = "text";
+        dpTask.id = "dp-task";
+        dpTask.maxLength = 300;
+        dpTask.placeholder = "Task (for example: Finish lab report)";
+        dpTask.onkeydown = (event) => { if (event.key === "Enter") addTaskForDay(); };
+        const dpButton = el("button", "primary", "Add task");
+        dpButton.onclick = addTaskForDay;
+        taskForm.append(dpTask, dpButton);
+        panel.appendChild(taskForm);
+    }
+
+    // ==================================================================
+    // SHARING
+    // ==================================================================
+    function closeModal() {
+        $("modal").classList.add("hidden");
+    }
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            closeModal();
+        }
+    });
+    async function shareCurrentNote() {
+        if (currentNoteId === null) {
+            return;
+        }
+        await saveNote();
+        await openShare("note", currentNoteId);
+    }
+    async function openShare(kind, id) {
+        if (id === null || id === undefined) {
+            return;
+        }
+        const query = kind === "note" ? `note_id=${id}` : `folder_id=${id}`;
+        const data = await api(`/api/shares?${query}`);
+        if (data.error) {
+            toast(data.error);
+            return;
+        }
+        renderShareModal(kind, id, data.share);
+        $("modal").classList.remove("hidden");
+    }
+    function renderShareModal(kind, id, share) {
+        const noun = kind === "note" ? "page" : "class";
+        const box = $("modal-box");
+        box.innerHTML = "";
+        box.appendChild(el("h2", "", kind === "note" ? "Share this page" : "Share this class"));
+        const actions = el("div", "modal-actions");
+        const done = el("button", "", "Done");
+        done.onclick = closeModal;
+        if (!share) {
+            box.appendChild(el(
+                "p",
+                "",
+                `Create a private link to this ${noun}. Anyone who has the link can read it, ` +
+                `but they can't edit anything.`
+            ));
+            const create = el("button", "primary", "Create link");
+            create.onclick = async () => {
+                const body = kind === "note" ? { note_id: id } : { folder_id: id };
+                const result = await api("/api/shares", "POST", body);
+                if (result.error) {
+                    toast(result.error);
+                    return;
+                }
+                renderShareModal(kind, id, result.share);
+            };
+            actions.append(done, create);
+            box.appendChild(actions);
+            return;
+        }
+        const url = location.origin + "/share/" + share.token;
+        box.appendChild(el(
+            "p",
+            "",
+            `Anyone with this link can read this ${noun}. Only send it to people you trust. ` +
+            `The link opens on this computer. Other people can only open it if the app is ` +
+            `running somewhere they can reach.`
+        ));
+        const row = el("div", "link-row");
+        const input = document.createElement("input");
+        input.type = "text";
+        input.readOnly = true;
+        input.value = url;
+        input.onfocus = () => input.select();
+        const copy = el("button", "", "Copy");
+        copy.onclick = async () => {
+            try {
+                await navigator.clipboard.writeText(url);
+            } catch (error) {
+                input.select();
+                document.execCommand("copy");
+            }
+            copy.textContent = "Copied";
+            setTimeout(() => copy.textContent = "Copy", 1500);
+        };
+        row.append(input, copy);
+        box.appendChild(row);
+        const label = el("label", "outside-toggle");
+        const box2 = document.createElement("input");
+        box2.type = "checkbox";
+        box2.checked = share.allow_comments;
+        box2.onchange = async () => {
+            await api(`/api/shares/${share.token}`, "PUT", { allow_comments: box2.checked });
+            share.allow_comments = box2.checked;
+        };
+        label.append(
+            box2,
+            document.createTextNode(
+                kind === "note"
+                    ? " Let people with the link leave comments"
+                    : " Let people with the link comment on pages in this class"
+            )
+        );
+        box.appendChild(label);
+        const stop = el("button", "danger", "Stop sharing");
+        stop.onclick = async () => {
+            if (!confirm("Stop sharing? The link will stop working immediately.")) {
+                return;
+            }
+            await api(`/api/shares/${share.token}`, "DELETE");
+            renderShareModal(kind, id, null);
+        };
+        actions.append(stop, done);
+        box.appendChild(actions);
+    }
+
+        // ==================================================================
+    // IMPORT + EXPORT
+    // ==================================================================
+    async function exportNote(format) {
+        $("export-menu").open = false;
+        if (currentNoteId === null) {
+            return;
+        }
+        await saveNote();
+        window.location.href = `/api/notes/${currentNoteId}/export?format=${format}`;
+    }
+    function exportAll() {
+        window.location.href = "/api/export/all";
+    }
+    async function importFiles(input) {
+        const files = Array.from(input.files);
+        input.value = "";
+        await importFileList(files);
+    }
+    async function importFileList(files) {
+        if (files.length === 0) {
+            return;
+        }
+        const form = new FormData();
+        files.forEach(file => form.append("files", file));
+        let target = null;
+        if (currentView === "editor") {
+            target = currentNoteFolderId;
+        } else if (currentView === "home") {
+            target = homeFilter;
+        }
+        if (target !== null && target !== undefined) {
+            form.append("folder_id", target);
+        }
+        toast(
+            "Importing " + files.length + (files.length === 1 ? " file" : " files") +
+            "... PDFs and images can take a few seconds."
+        );
+        let data;
+        try {
+            const response = await fetch("/api/import", { method: "POST", body: form });
+            data = await response.json();
+        } catch (error) {
+            toast("Import failed. Is the app still running?");
+            return;
+        }
+        if (data.error) {
+            toast(data.error);
+            return;
+        }
+        const parts = [];
+        if (data.notes_created) {
+            parts.push(pageCount(data.notes_created) + " imported");
+        }
+        if (data.restored) {
+            const r = data.restored;
+            parts.push(
+                `backup restored (${pageCount(r.notes)}, ${r.folders} new classes, ` +
+                `${r.todos} tasks, ${r.events} events, ${r.comments} comments, ` +
+                `${r.files || 0} images and PDFs)`
+            );
+        }
+        if (data.warnings && data.warnings.length) {
+            parts.push(data.warnings.join(" "));
+        }
+        if (data.skipped && data.skipped.length) {
+            parts.push("could not import: " + data.skipped.join(", "));
+        }
+        toast(parts.join(". ") || "Nothing was imported.");
+        await refresh();
+    }
+
+    // ==================================================================
+    // AI FEATURES
+    // ==================================================================
+    function setAIBusy(busy) {
+        document
+            .querySelectorAll(".ai-section button")
+            .forEach(button => button.disabled = busy);
+    }
+    async function runAI(kind) {
+        if (currentNoteId === null) {
+            toast("Open or create a page first.");
+            return;
+        }
+        const output = $("output");
+        setAIBusy(true);
+        output.textContent = "Thinking...";
+        try {
+            await saveNote();   // make sure the AI sees your latest text
+            const data = await api(`/api/notes/${currentNoteId}/${kind}`, "POST");
+            output.textContent = data.result || data.error;
+        } catch (error) {
+            output.textContent = "Could not reach the server.";
+        } finally {
+            setAIBusy(false);
+        }
+    }
+    async function askAI() {
+        if (currentNoteId === null) {
+            toast("Open or create a page first.");
+            return;
+        }
+        const question = $("question").value.trim();
+        if (!question) {
+            return;
+        }
+        const output = $("output");
+        setAIBusy(true);
+        output.textContent = "Thinking...";
+        try {
+            await saveNote();
+            const data = await api(
+                `/api/notes/${currentNoteId}/ask`,
+                "POST",
+                {
+                    question: question,
+                    allow_outside: $("allow-outside").checked
+                }
+            );
+            output.textContent = data.result || data.error;
+        } catch (error) {
+            output.textContent = "Could not reach the server.";
+        } finally {
+            setAIBusy(false);
+        }
+    }
+
+    // ==================================================================
+    // THEME (light / dark)
+    // ==================================================================
+    function currentTheme() {
+        return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    }
+    function updateThemeButton() {
+        $("theme-toggle").textContent = currentTheme() === "dark" ? "☀ Light mode" : "☾ Dark mode";
+    }
+    function setTheme(theme, remember) {
+        document.documentElement.setAttribute("data-theme", theme);
+        if (remember) {
+            try { localStorage.setItem("theme", theme); } catch (error) {}
+        }
+        updateThemeButton();
+    }
+    function toggleTheme() {
+        setTheme(currentTheme() === "dark" ? "light" : "dark", true);
+    }
+    // Until you choose a theme yourself, follow the computer's setting.
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
+        let saved = null;
+        try { saved = localStorage.getItem("theme"); } catch (error) {}
+        if (saved !== "light" && saved !== "dark") {
+            setTheme(event.matches ? "dark" : "light", false);
+        }
+    });
+
+    // ==================================================================
+    // START
+    // ==================================================================
+    updateThemeButton();
+    refresh();
+</script>
+
+</body>
+</html>
+{% endraw %}

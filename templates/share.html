@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        // Set the theme before the page paints, so there is no flash of the wrong colors.
+        (function () {
+            var theme = null;
+            try { theme = localStorage.getItem("theme"); } catch (error) {}
+            if (theme !== "light" && theme !== "dark") {
+                theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            }
+            document.documentElement.setAttribute("data-theme", theme);
+        })();
+    </script>
+
+    <title>{% if mode == "missing" %}Link unavailable{% else %}{{ title }}{% endif %} - Notes AI</title>
+
+    <style>
+        :root,
+        :root[data-theme="light"] {
+            color-scheme: light;
+            --font: "IBM Plex Mono", "Roboto Mono", ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace;
+            --page: #e9e2cf;
+            --paper: #f3eedd;
+            --field: #f8f4e6;
+            --hover-paper: #e6dfca;
+            --line: #bdb59a;
+            --line-soft: #d3ccb4;
+            --ink: #2c2b25;
+            --ink-2: #4f4c42;
+            --ink-3: #5c5847;
+            --accent: #7d9166;
+            --accent-strong: #56704a;
+            --accent-hover: #496340;
+            --on-accent: #f6f1e1;
+            --link: #4a6a3d;
+            --danger: #8a3226;
+        }
+        :root[data-theme="dark"] {
+            color-scheme: dark;
+            --page: #21221a;
+            --paper: #2b2c21;
+            --field: #191a12;
+            --hover-paper: #34362a;
+            --line: #43443a;
+            --line-soft: #34352b;
+            --ink: #e6dfc8;
+            --ink-2: #bab39a;
+            --ink-3: #a09a82;
+            --accent: #a3b784;
+            --accent-strong: #a3b784;
+            --accent-hover: #b5c896;
+            --on-accent: #1c1d14;
+            --link: #b9cd9a;
+            --danger: #e59a88;
+        }
+
+        * { box-sizing: border-box; }
+        html { background: var(--page); scrollbar-color: var(--line) transparent; }
+        body { margin: 0; font-family: var(--font); font-size: 14px; background: var(--page); color: var(--ink); }
+        ::selection { background: var(--accent-strong); color: var(--on-accent); }
+        button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible {
+            outline: 2px solid var(--link);
+            outline-offset: 2px;
+        }
+
+        .page { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
+        .badge { font-size: 12px; color: var(--ink-2); margin-bottom: 28px; }
+        .back { display: inline-block; font-size: 13px; color: var(--ink-2); text-decoration: none; margin-bottom: 18px; }
+        .back:hover { color: var(--ink); text-decoration: underline; }
+        h1.title { font-size: 30px; margin: 0 0 24px; overflow-wrap: anywhere; }
+
+        .content { font-size: 15px; line-height: 1.8; overflow-wrap: anywhere; }
+        .content > :first-child { margin-top: 0 !important; }
+        .content h1 { font-size: 1.7em; margin: 1em 0 0.4em; }
+        .content h2 { font-size: 1.4em; margin: 1em 0 0.4em; }
+        .content h3 { font-size: 1.15em; margin: 1em 0 0.4em; }
+        .content p { margin: 0 0 0.8em; }
+        .content blockquote { margin: 0.8em 0; padding-left: 14px; border-left: 3px solid var(--accent); color: var(--ink-2); }
+        .content pre { background: var(--paper); border: 1px solid var(--line-soft); padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 13px; }
+        .content code { background: var(--paper); padding: 1px 4px; border-radius: 3px; font-size: 0.92em; }
+        .content pre code { padding: 0; background: none; }
+        .content hr { border: none; border-top: 1px solid var(--line); margin: 1.4em 0; }
+        .content img { display: block; max-width: 100%; height: auto; border-radius: 4px; margin: 10px 0; }
+        .content a { color: var(--link); }
+
+        .note-link {
+            display: block;
+            padding: 14px 16px;
+            border: 1px solid var(--line-soft);
+            background: var(--paper);
+            border-radius: 6px;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+        .note-link:hover { background: var(--hover-paper); }
+        .note-link strong { display: block; margin-bottom: 4px; }
+        .note-link span { font-size: 12px; color: var(--ink-2); }
+        .empty { color: var(--ink-2); }
+
+        .comments { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line); }
+        .comments h2 { font-size: 16px; margin: 0 0 14px; }
+        .comment { padding: 12px 14px; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; margin-bottom: 10px; }
+        .comment-meta { font-size: 12px; color: var(--ink-2); margin-bottom: 4px; }
+        .comment-body { font-size: 13px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .comment-form { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+        .comment-form input, .comment-form textarea {
+            padding: 10px;
+            border: 1px solid var(--line);
+            background: var(--field);
+            color: var(--ink);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 13px;
+        }
+        .comment-form input::placeholder, .comment-form textarea::placeholder { color: var(--ink-3); }
+        .comment-form textarea { min-height: 80px; resize: vertical; }
+
+        button {
+            align-self: flex-start;
+            padding: 8px 14px;
+            border: 1px solid var(--accent-strong);
+            background: var(--accent-strong);
+            color: var(--on-accent);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+        }
+        button:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+        button:active { transform: translateY(1px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        #comment-status { font-size: 12px; color: var(--danger); }
+
+        .theme-toggle {
+            position: fixed;
+            top: 14px;
+            right: 14px;
+            padding: 6px 10px;
+            font-size: 12px;
+            background: var(--paper);
+            color: var(--ink);
+            border: 1px solid var(--line);
+        }
+        .theme-toggle:hover { background: var(--hover-paper); border-color: var(--line); }
+        @media (prefers-reduced-motion: reduce) { button:active { transform: none; } }
+    </style>
+</head>
+
+<body>
+<button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Switch between light and dark mode">☾ Dark mode</button>
+<div class="page">
+
+{% if mode == "missing" %}
+
+    <h1 class="title">This link isn't available</h1>
+    <p class="empty">
+        The page may have been deleted, or its owner stopped sharing it.
+        Ask them for a new link.
+    </p>
+
+{% else %}
+
+    <div class="badge">Shared with you · read only</div>
+
+    {% if mode == "folder" %}
+
+        <h1 class="title">📁 {{ title }}</h1>
+
+        {% if notes %}
+            {% for note in notes %}
+                <a class="note-link" href="/share/{{ token }}/{{ note.id }}">
+                    <strong>{{ note.title or "Untitled" }}</strong>
+                    <span>{{ note.preview or "Empty page" }}</span>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p class="empty">There are no pages in this class yet.</p>
+        {% endif %}
+
+    {% else %}
+
+        {% if back_url %}
+            <a class="back" href="{{ back_url }}">← {{ back_label }}</a>
+        {% endif %}
+
+        <h1 class="title">{{ title or "Untitled" }}</h1>
+
+        <div class="content">{{ content|safe }}</div>
+
+        {% if allow_comments or comments %}
+        <div class="comments">
+
+            <h2>Comments ({{ comments|length }})</h2>
+
+            {% for comment in comments %}
+                <div class="comment">
+                    <div class="comment-meta">{{ "Owner" if comment.source == "owner" else comment.author }} · {{ comment.created_at }} UTC</div>
+                    <div class="comment-body">{{ comment.body }}</div>
+                </div>
+            {% endfor %}
+
+            {% if allow_comments %}
+            <div class="comment-form">
+                <input id="comment-author" type="text" maxlength="40" placeholder="Your name">
+                <textarea id="comment-body" maxlength="1000" placeholder="Write a comment..."></textarea>
+                <button id="comment-button" onclick="sendComment()">Post comment</button>
+                <div id="comment-status"></div>
+            </div>
+            {% endif %}
+
+        </div>
+        {% endif %}
+
+    {% endif %}
+
+{% endif %}
+
+</div>
+
+<script>
+    function updateThemeButton() {
+        var dark = document.documentElement.getAttribute("data-theme") === "dark";
+        document.getElementById("theme-toggle").textContent = dark ? "☀ Light mode" : "☾ Dark mode";
+    }
+    function toggleTheme() {
+        var dark = document.documentElement.getAttribute("data-theme") === "dark";
+        var next = dark ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem("theme", next); } catch (error) {}
+        updateThemeButton();
+    }
+    updateThemeButton();
+</script>
+
+{% if mode == "note" and allow_comments %}
+<script>
+    async function sendComment() {
+
+        const button = document.getElementById("comment-button");
+        const status = document.getElementById("comment-status");
+        const body = document.getElementById("comment-body").value.trim();
+
+        if (!body) {
+            status.textContent = "Please write a comment first.";
+            return;
+        }
+
+        button.disabled = true;
+        status.textContent = "";
+
+        try {
+            const response = await fetch(
+                "/share/{{ token }}/{{ note_id }}/comments",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        author: document.getElementById("comment-author").value,
+                        body: body
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                status.textContent = data.error || "Could not post the comment.";
+                button.disabled = false;
+                return;
+            }
+
+            location.reload();
+
+        } catch (error) {
+            status.textContent = "Could not reach the server.";
+            button.disabled = false;
+        }
+    }
+</script>
+{% endif %}
+
+</body>
+</html>
