@@ -40,13 +40,13 @@ Focus Space is currently a prototype and is still under development. Future plan
 ## Screenshots
 
 ### Dashboard
-[Add dashboard screenshot]
+https://github.com/524RC/Focus-Space/blob/main/Homepage.png 
 
 ### AI Study Tools
-[Add AI tools screenshot]
+https://github.com/524RC/Focus-Space/blob/main/Notes%20pages%20and%20AI%20integration.png 
 
 ### Task Management
-[Add tasks screenshot]
+https://github.com/524RC/Focus-Space/blob/main/Task%20Page.png 
 
 ### Calendar
-[Add calendar screenshot]
+https://github.com/524RC/Focus-Space/blob/main/Calendar%20Page.png 
